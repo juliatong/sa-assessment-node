@@ -10,16 +10,6 @@
 
 ---
 
-### Approach
-
-The brief has explicit requirements — Payment Element, `pi_` ID, confirmation page — and implicit ones. The implicit requirements are where integrations fail: price must be server-side, confirmation must come from Stripe not URL params, and the code structure must support live extension. I mapped both sets before writing any code, then verified that the architecture satisfied each one.
-
-I evaluated the PaymentIntents API and the Checkout Sessions API against the brief. Both satisfy "Payment Element, not hosted Checkout" — that distinction is about UI, not backend API. Checkout Sessions was chosen because the line-items model maps naturally to a retail transaction, and because the extension paths a real business would want — subscriptions, tax, discounts — are native to Sessions rather than bolted on. The `pi_` requirement adds one `expand` parameter to the retrieve call: a reasonable cost.
-
-Architecture came before code. I established trust boundaries first, then the middleware ordering constraint (webhook before `express.json()` — a hard rule, not a convention), then the client-side state machine. Getting the middleware order wrong causes silent signature verification failures that surface as Stripe errors with no obvious cause. Identifying that constraint early prevented a debugging session during the build.
-
----
-
 ### Overview
 
 A server-rendered Node.js bookstore that processes payments using Stripe's Checkout Sessions API with `ui_mode: 'custom'`, embedding a Payment Element on a custom-branded checkout page.
