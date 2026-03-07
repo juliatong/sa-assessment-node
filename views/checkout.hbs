@@ -14,19 +14,21 @@
     </div>
     <div class="card box-shadow mt-40">
       <div class="card-body">
-        <form name="payment-form">
+        <form id="payment-form" data-publishable-key="{{publishableKey}}" data-book-id="{{bookId}}">
           <div>
             <label for="email">Email address</label>
             <input type="email" class="form-control" id="email" name="email" placeholder="you@email.com">
           </div>
-          <div class="mt-20 text-center text-secondary border-placeholder">
-            Add Stripe Element here!
+          <div id="payment-element" class="mt-20">
           </div>
+          <div id="payment-error" class="mt-20 text-danger" style="display:none;"></div>
           <div class="mt-20">
-            <button type="submit" class="btn btn-lg btn-block btn-primary">Pay $<span class="amount" data-amount="{{amount}}"></span></button>
+            <button type="submit" id="submit-btn" class="btn btn-lg btn-block btn-primary">Pay $<span class="amount" data-amount="{{amount}}"></span></button>
           </div>
         </form>
       </div>
     </div>
   </div>
 </div>
+<script src="https://js.stripe.com/v3/"></script>
+<script src="/js/checkout.js"></script>

@@ -1,29 +1,66 @@
 # Take home project
-This is a simple e-commerce application that a customer can use to purchase a book, but it's missing the payments functionality —  your goal is to integrate Stripe to get this application running!
-
-## Candidate instructions
-You'll receive these in email.
+A simple e-commerce application using Stripe Custom Checkout with the Payment Element.
 
 ## Application overview
-This demo is written in Javascript (Node.js) with the [Express framework](https://expressjs.com/). You'll need to retrieve a set of testmode API keys from the Stripe dashboard (you can create a free test account [here](https://dashboard.stripe.com/register)) to run this locally.
+Written in Node.js with the [Express framework](https://expressjs.com/). Uses Stripe's Custom Checkout (`ui_mode: 'custom'`) to render the Payment Element and collect payments.
 
-We're using the [Bootstrap](https://getbootstrap.com/docs/4.6/getting-started/introduction/) CSS framework. It's the most popular CSS framework in the world and is pretty easy to get started with — feel free to modify styles/layout if you like. 
+## Setup
 
-To simplify this project, we're also not using any database here, either. Instead `app.js` includes a simple switch statement to read the GET params for `item`. 
+### Prerequisites
+- Node.js
+- A Stripe account with test API keys ([sign up free](https://dashboard.stripe.com/register))
 
-To get started, clone the repository and run `npm install` to install dependencies:
+### Installation
+
+Clone and install dependencies:
 
 ```
 git clone https://github.com/mattmitchell6/sa-takehome-project-node && cd sa-takehome-project-node
 npm install
 ```
 
-Rename `sample.env` to `.env` and populate with your Stripe account's test API keys
+Copy `sample.env` to `.env` and populate with your Stripe test API keys:
 
-Then run the application locally:
+```
+cp sample.env .env
+```
+
+Your `.env` file needs:
+- `STRIPE_SECRET_KEY` — from the Stripe Dashboard → Developers → API keys
+- `STRIPE_PUBLISHABLE_KEY` — from the Stripe Dashboard → Developers → API keys
+- `STRIPE_WEBHOOK_SECRET` — from the Stripe CLI or Dashboard webhook endpoint
+- `BASE_URL` — `http://localhost:3000` for local development
+
+### Run the app
 
 ```
 npm start
 ```
 
-Navigate to [http://localhost:3000](http://localhost:3000) to view the index page.
+Navigate to [http://localhost:3000](http://localhost:3000) to view the shop.
+
+### Run tests
+
+```
+npm test
+```
+
+## Webhook setup
+
+To test webhooks locally, use the [Stripe CLI](https://stripe.com/docs/stripe-cli):
+
+```
+stripe listen --forward-to localhost:3000/webhook
+```
+
+Copy the webhook signing secret output by the CLI into your `.env` as `STRIPE_WEBHOOK_SECRET`.
+
+## Test card
+
+Use Stripe's test card number to complete a payment:
+
+| Field | Value |
+|-------|-------|
+| Card number | `4242 4242 4242 4242` |
+| Expiry | Any future date |
+| CVC | Any 3 digits |
