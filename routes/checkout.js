@@ -1,11 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const stripe = require('../config/stripe');
-const books = require('../data/books');
+const { books, getBookById } = require('../data/books');
 
 router.get('/', (req, res) => {
   const bookId = parseInt(req.query.bookId, 10);
-  const book = books.find(b => b.id === bookId);
+  const book = getBookById(bookId);
 
   if (!book) {
     return res.status(404).render('index', { books, error: 'Book not found.' });
@@ -21,7 +21,7 @@ router.get('/', (req, res) => {
 
 router.post('/', async (req, res) => {
   const bookId = parseInt(req.body.bookId, 10);
-  const book = books.find(b => b.id === bookId);
+  const book = getBookById(bookId);
 
   if (!book) {
     return res.status(400).json({ error: 'Book not found.' });

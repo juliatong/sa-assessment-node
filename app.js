@@ -26,4 +26,10 @@ app.use('/checkout', require('./routes/checkout'));
 
 app.use('/success', require('./routes/success'));
 
+// Fatal error handler — renders error.hbs
+app.use((err, req, res, next) => {
+  console.error(err);
+  res.status(500).render('error', { message: err.message || 'An unexpected error occurred.' });
+});
+
 module.exports = app;

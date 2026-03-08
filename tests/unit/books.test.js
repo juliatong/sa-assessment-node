@@ -1,4 +1,4 @@
-const books = require('../data/books');
+const { books, getBookById } = require('../../data/books');
 
 describe('books data', () => {
   test('has 3 books', () => {
@@ -30,5 +30,20 @@ describe('books data', () => {
 
   test('book 1 price is 2300', () => {
     expect(books.find(b => b.id === 1).price).toBe(2300);
+  });
+});
+
+describe('getBookById', () => {
+  test('returns the correct book for a valid id', () => {
+    const book = getBookById(1);
+    expect(book).toMatchObject({ id: 1, title: 'The Art of Doing Science and Engineering' });
+  });
+
+  test('returns null for an unknown id', () => {
+    expect(getBookById(99)).toBeNull();
+  });
+
+  test('returns null for non-numeric id', () => {
+    expect(getBookById(NaN)).toBeNull();
   });
 });

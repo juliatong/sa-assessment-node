@@ -33,7 +33,7 @@ Order fulfillment is stubbed. In production it belongs in the `checkout.session.
 │  views/success.hbs       pi_ ID + amount                 │
 │  views/error.hbs         fatal error display             │
 │                                                          │
-│  public/checkout.js      client-side state machine       │
+│  public/js/checkout.js      client-side state machine       │
 │  https://js.stripe.com/v3/  Stripe.js (CDN, PCI)         │
 └──────────────────────┬───────────────────────────────────┘
                        │ HTTP
@@ -240,6 +240,20 @@ Tests mock the Stripe SDK — no `.env` file required. All tests pass on a clean
 
 ---
 
+### Test Cards
+
+Use any future expiry date and any 3-digit CVC.
+
+| Card Number | Scenario | Expected Behaviour |
+|---|---|---|
+| `4242 4242 4242 4242` | Success | Redirects to success page with `pi_` and amount |
+| `4000 0000 0000 0002` | Card declined | Error message in checkout page, Pay button re-enabled |
+| `4000 0025 0000 3155` | 3DS required | Auth modal; complete → success, cancel → error |
+
+Full test card reference: https://docs.stripe.com/testing
+
+---
+
 ### Local Webhooks
 
 ```bash
@@ -255,17 +269,3 @@ Copy the `whsec_...` value into `STRIPE_WEBHOOK_SECRET` in your `.env` file. Res
 stripe trigger checkout.session.completed
 # Terminal should show: POST /webhook 200
 ```
-
----
-
-### Test Cards
-
-Use any future expiry date and any 3-digit CVC.
-
-| Card Number | Scenario | Expected Behaviour |
-|---|---|---|
-| `4242 4242 4242 4242` | Success | Redirects to success page with `pi_` and amount |
-| `4000 0000 0000 0002` | Card declined | Error message in checkout page, Pay button re-enabled |
-| `4000 0025 0000 3155` | 3DS required | Auth modal; complete → success, cancel → error |
-
-Full test card reference: https://docs.stripe.com/testing

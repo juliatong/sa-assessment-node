@@ -1,4 +1,4 @@
-module.exports = [
+const books = [
   {
     id: 1,
     title: 'The Art of Doing Science and Engineering',
@@ -24,3 +24,9 @@ module.exports = [
     description: 'Nadia Eghbal takes an inside look at modern open source and offers a model through which to understand the challenges faced by online creators.'
   }
 ];
+
+function getBookById(id) {
+  return books.find(b => b.id === id) || null;
+}
+
+module.exports = { books, getBookById };

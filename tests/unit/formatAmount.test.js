@@ -1,4 +1,4 @@
-const formatAmount = require('../lib/formatAmount');
+const formatAmount = require('../../lib/formatAmount');
 
 describe('formatAmount', () => {
   test('converts 2300 to $23.00', () => {

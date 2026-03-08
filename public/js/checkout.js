@@ -32,8 +32,12 @@
   paymentElement.mount('#payment-element');
 
   // Phase 2: load actions
-  const actions = await checkout.loadActions();
-
+  let actions
+  const loadActionsResult = await checkout.loadActions();
+  if (loadActionsResult.type === 'success') {
+    actions = loadActionsResult.actions;
+  }  
+  
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     submitBtn.disabled = true;
