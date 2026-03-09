@@ -43,7 +43,7 @@ Before writing README.md, I asked myself a question who potentially will be read
 
 ## Challenges
 
-### Stripe API doc being too GOOD, and Stripe AI Assistant 
+### Stripe API doc/Stripe AI Assistant being too GOOD. Tendency to jump into coding 
 
 The [Checkout Sessions AP Quickstart](https://docs.stripe.com/payments/quickstart-checkout-sessions) comphrehensiveness and "Integrate in vs code" didn't help with the urge/tendency to jump in the code and start building immediately. When I applied the code in the boilerplate code, fortunately it didn't work with simple copy-paste. 
 
@@ -53,7 +53,7 @@ The [Checkout Sessions AP Quickstart](https://docs.stripe.com/payments/quickstar
 After the Architecture is done, I mapped out the file structure. By looking at the existing code structure, did I learn the conventional structure for express-handlebars, and iterated my file structure. 
 
 **Resolution:** 
-Fortunately, the file structure I have designed overall extends the existing code. There will be a decision to make had the boilerplate code been much more different from my idea file structure. It might require an additional step to restrcuture the exisiting files first.
+Fortunately, the file structure I have designed overall extends the existing code. There will be a decision to make had the boilerplate code been much more different from my ideal file structure. It might require an additional step to restrcuture the exisiting files first.
 
 ### Middleware ordering for webhook signature verification
 
@@ -81,7 +81,12 @@ The checkout page is server-rendered (Handlebars), but `public/checkout.js` is a
 
 ## Documentation Used
 
+**Test card numbers**
+`https://docs.stripe.com/testing`
+Cards used: `4242 4242 4242 4242` (success), `4000 0000 0000 0002` (decline), `4000 0000 0000 3155` (3DS).
+
 **Custom checkout — `ui_mode: 'custom'`**
+`https://docs.stripe.com/payments/quickstart-checkout-sessions`
 Confirmed `ui_mode: 'custom'` as the correct parameter for embedding a Payment Element on a custom page, distinct from hosted Stripe Checkout. Confirmed the current client-side API: `stripe.initCheckout()` is synchronous; `checkout.createPaymentElement()` lives on the checkout object; `checkout.loadActions()` is async and gates `actions.confirm()` and `actions.updateEmail()`.
 
 **Checkout Session object reference**
@@ -96,7 +101,3 @@ Confirmed `metadata`, `return_url` template variable (`{CHECKOUT_SESSION_ID}`), 
 `https://docs.stripe.com/checkout/elements-with-checkout-sessions-api/changelog`
 Critical: confirmed that `initCheckout()` became synchronous in a recent breaking change. Also confirmed error shape for `actions.confirm()`: `{ type: 'error', error }`.
 
-
-**Test card numbers**
-`https://docs.stripe.com/testing`
-Cards used: `4242 4242 4242 4242` (success), `4000 0000 0000 0002` (decline), `4000 0000 0000 3155` (3DS).

@@ -14,7 +14,7 @@
 
 A server-rendered Node.js bookstore that processes payments using Stripe's Checkout Sessions API with `ui_mode: 'custom'`, embedding a Payment Element on a custom-branded checkout page.
 
-Checkout Sessions was chosen over the PaymentIntents API directly because it models the purchase as a line-items transaction from the start — meaning subscriptions, tax, and discounts become configuration changes rather than rewrites. The `pi_` ID the brief requires is accessible via `expand: ['payment_intent']` on session retrieval: a one-parameter addition rather than a reason to avoid the API.
+**Why Checkout Sessions API over the PaymentIntents API directly:** the brief has two implicit requirements beyond the stated ones — prices must originate server-side and payment confirmation must come from Stripe, not be reconstructable from query strings. Checkout Sessions API enforces both: the session is a server-side object created before the user sees any UI, and its status is authoritative. The line-items model also means subscriptions, tax, and discounts become configuration changes rather than rewrites. The `pi_ ID` the brief requires is accessible via expand: ['payment_intent'] on session retrieval — a one-parameter addition, not a reason to choose a different API.
 
 The implementation exposes the full payment lifecycle deliberately: server-side session creation enforces price integrity, client-side Element mounting keeps card data off our servers, and server-side result verification means the confirmation page cannot be spoofed by crafting a fake success URL.
 
@@ -61,9 +61,39 @@ Order fulfillment is stubbed. In production it belongs in the `checkout.session.
 └──────────────────────────────────────────────────────────┘
 ```
 
-**The trust boundary between the Application and Browser layers is the most important line in the diagram.** Everything the server trusts — prices, session status, payment amounts — lives above it. Everything that could be manipulated by a user lives below it.
+**The trust boundary between the Application and Browser layers is the most important line in the diagram.** Everything the server trusts — prices, session status, payment amounts — lives above it. Everything that could be manipulated by a user lives below it. Each party owns specific data — and ownership determines where logic lives:
 
-**Design decisions:**
+| Party | Owns | Cannot own |
+| --- | --- | --- |
+| Browser | User input: email, card details, UI state | Prices, session status, payment amounts |
+| Server | Prices (`data/books.js`), session creation, result verification | Anything the browser sends about money |
+| Stripe | Whether payment succeeded, `payment_intent.id`, amount charged | Nothing — its API responses are authoritative by definition |
+
+
+The practical consequence: a user editing a POST request in DevTools cannot change the amount Stripe charges, because the browser never sends a price. bookId crosses the boundary as intent only — the server looks up the price. The session_id in the redirect URL is a lookup key, not proof of payment — the server verifies status directly with Stripe's API before rendering the confirmation page.
+
+---
+
+### Challenges
+
+Three non-obvious issues encountered during the build, documented because a customer integrating the same stack would hit all three.
+
+**Middleware ordering for webhook signature verification**
+stripe.webhooks.constructEvent() requires the raw, unparsed request body. express.json() was already present in the boilerplate and consumes the body before the route handler sees it. If the webhook route is registered after express.json(), constructEvent() always throws — but the error message points at the signature, not the body parser. The root cause is not obvious from the error.
+Resolution: register the webhook route with express.raw({ type: 'application/json' }) in app.js above the existing express.json() line. In production, getting this order wrong means webhook events are silently rejected with a 400 — no alert unless you monitor response codes in the Dashboard.
+
+**Stripe SDK version incompatibility**
+The boilerplate ships with stripe@^8.137.0 (2021). The ui_mode: 'custom' parameter on Checkout Sessions was introduced after v8. Calling sessions.create({ ui_mode: 'custom' }) on v8 throws "Received unknown parameter: ui_mode" — an error that reads like a typo rather than a version issue.
+Resolution: npm install stripe@latest upgrades to v17. The boilerplate's express-handlebars@^5.2.1 was deliberately not upgraded — its v5 constructor API is used directly in app.js and v6 is a breaking change.
+
+**Stripe.js client API — initCheckout is now synchronous, with a two-object split**
+The Stripe.js docs show stripe.initCheckout() as synchronous in the current version, but older examples still await it. More importantly, createPaymentElement() lives on the checkout object, while confirm() and updateEmail() live on the actions object returned by the separate async checkout.loadActions() call. Conflating these two objects causes either a missing Payment Element or an uncallable confirm, with no obvious error message in either case.
+
+The split is intentional: Element creation can happen before actions are loaded; confirmation must wait for them.
+
+---
+
+### Design decisions:
 
 **D1 — app.js / server.js split.**
 `app.listen()` lives in `server.js` only. Tests import `app.js` directly without starting a real server — no port conflicts, no test pollution.
@@ -269,3 +299,13 @@ Copy the `whsec_...` value into `STRIPE_WEBHOOK_SECRET` in your `.env` file. Res
 stripe trigger checkout.session.completed
 # Terminal should show: POST /webhook 200
 ```
+
+---
+
+### Documentation Used
+`https://docs.stripe.com/payments/elements`
+`https://docs.stripe.com/testing`
+`https://docs.stripe.com/payments/quickstart-checkout-sessions`
+`https://docs.stripe.com/api/checkout/sessions/object`
+`https://docs.stripe.com/api/checkout/sessions/create`
+`https://docs.stripe.com/checkout/elements-with-checkout-sessions-api/changelog`
